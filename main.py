@@ -26,14 +26,14 @@ SCRIPT_KEY  = os.environ['SG_SCRIPT_KEY']
 sg = Shotgun(SERVER_PATH, SCRIPT_NAME, SCRIPT_KEY)
 
 
+
 def evaluate_query_field(query_field_name, entity, props):
     """
-    Goal: Use the introspected schema info to construct a new filter structure
-    for each of the two Sequence query fields.
+    Use the introspected schema info to construct a new filter structure
+    for the given query field.
 
-    Note: An ideal programatic solution should recurse though an unknown level
-    of filter conditions to constuct a new query and work for any query fields
-    passed in.
+    This solution recurses though an arbitrarily deep level of filter
+    conditions to construct a new query and work for any query fields passed in.
 
     See the output of the schema properties for the two query fields in
     ./schema.txt
@@ -45,59 +45,46 @@ def evaluate_query_field(query_field_name, entity, props):
 
     data = {}
 
-    pp(query_field_name, 'query_field_name', 1)
-    pp(entity, 'Entity', 1)
-    #pp(props, 'Properites', 1)
-
     data['entity_type'] = props['query']['value']['entity_type']
     data['summary_field'] = props['summary_field']['value']
     data['summary_default'] = props['summary_default']['value']
 
-    new_filters = []
+    filters  = props['query']['value']['filters']
 
-    conditions_l1 = props['query']['value']['filters']['conditions']
-    logical_operator = props['query']['value']['filters']['logical_operator']
+    def build_filters(filters):
+        """
+        A recursive function to construct a potentially nested 'filters' object.
 
-    for condition in conditions_l1:
-        if 'path' in condition:
-            pp('create filter', 1)
+        (defined as an inner function to have access to 'entity')
+        """
+
+        if 'path' in filters:
+            values = filters['values'][0]
+            if 'name' in filters['values'][0]:
+                values = filters['values'][0]['name']
+                if values == 'Current Sequence':
+                    values = entity
+            return [filters['path'], filters['relation'], values]
         else:
-            pass
+            if 'logical_operator' in filters:
+                filter = {}
+                filter['filter_operator'] = filters['logical_operator']
+                filter['filters'] = []
 
-    return
-
-    if 'conditions' in props['query']['value']['filters']['conditions'][0]:
-
-        data['path'] = props['query']['value']['filters']['conditions'][0]\
-                ['conditions'][1]['path']
-        data['operator'] = props['query']['value']['filters']['conditions'][0]\
-                ['conditions'][1]['relation']
-
-        new_filters.append([data['path'], data['operator'], entity])
-        new_filters.append({
-            "filter_operator": "and",
-            "filters": [
-                ["sg_status_list", "is_not", ['na']],
-                ["sg_status_list", "is_not", ['apr']],
-            ]
-        })
-
-    if 'path' in props['query']['value']['filters']['conditions'][0]:
-
-        data['path'] = props['query']['value']['filters']['conditions'][0]['path']
-        data['operator'] = props['query']['value']['filters']['conditions'][0]['relation']
-
-        new_filters.append([data['path'], data['operator'], entity])
+                for sub_filter in filters['conditions']:
+                    filter['filters'].append(build_filters(sub_filter))
+                return filter
 
 
-    pp(new_filters, 'new_filters', 1)
+    new_filters = build_filters(filters)
+
+    pp(new_filters['filters'], 'new_filters', 1)
 
     result = sg.summarize(
         entity_type=data['entity_type'],
-        filters=new_filters,
+        filters=new_filters['filters'],
         summary_fields=[{"field": data['summary_field'], "type": data['summary_default']}]
     )
-
                 
     return {
         'query_field': query_field_name,
@@ -118,16 +105,22 @@ if __name__ == "__main__":
 
     for sequence in sequences:
 
-        QUERY_FIELDS = ['sg_cut_duration']
-        QUERY_FIELDS = ['sg_ip_versions']
+        pp(sequence, 'Sequence', 1)
+        pp('-'*70, None, 1)
+
         QUERY_FIELDS = ['sg_cut_duration', 'sg_ip_versions']
 
         data = []
         for query_field_name in QUERY_FIELDS:
+
+            pp(query_field_name, 'query_field_name', 1)
+
             props = sg.schema_field_read('Sequence', query_field_name)[query_field_name]['properties']
             data.append(
                 evaluate_query_field(query_field_name, sequence, props)
             )
+
+            pp('-'*70, None, 1)
 
         sgdata.append({
             'type': sequence['type'],
@@ -135,6 +128,7 @@ if __name__ == "__main__":
             'name': sequence['code'],
             'data': data
         })
+
 
     pp(sgdata, 'results')
 
