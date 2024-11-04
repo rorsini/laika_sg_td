@@ -1,4 +1,4 @@
-# Laika SG TD
+# Laika SG TD - Solution
 
 ## Setup
 
