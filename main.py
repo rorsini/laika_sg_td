@@ -83,7 +83,7 @@ def evaluate_query_field(query_field_name, entity, props):
                 
     return {
         'query_field': query_field_name,
-        'type': data['summary_default'],
+        'type': data['summary_default'].replace('_',' ').title(),
         'result': result['summaries'][data['summary_field']]
     }
 
