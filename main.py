@@ -22,7 +22,7 @@ SCRIPT_NAME = os.environ['SG_SCRIPT_NAME']
 SCRIPT_KEY  = os.environ['SG_SCRIPT_KEY']
 
 
-# Instantiate a Shotgrid object
+# instantiate a Shotgrid object
 sg = Shotgun(SERVER_PATH, SCRIPT_NAME, SCRIPT_KEY)
 
 
@@ -31,8 +31,8 @@ def evaluate_query_field(query_field_name, entity, props):
     Goal: Use the introspected schema info to construct a new filter structure
     for each of the two Sequence query fields.
 
-    A programatic solution should (ideally) recurse though an unknown level of
-    filter conditions to constuct a new query and work for any query fields
+    Note: An ideal programatic solution should recurse though an unknown level
+    of filter conditions to constuct a new query and work for any query fields
     passed in.
 
     See the output of the schema properties for the two query fields in
@@ -71,6 +71,13 @@ def evaluate_query_field(query_field_name, entity, props):
                 ['conditions'][1]['relation']
 
         new_filters.append([data['path'], data['operator'], entity])
+        new_filters.append({
+            "filter_operator": "and",
+            "filters": [
+                ["sg_status_list", "is_not", ['na']],
+                ["sg_status_list", "is_not", ['apr']],
+            ]
+        })
 
     pp(new_filters, 'new_filters', 1)
 
@@ -84,7 +91,7 @@ def evaluate_query_field(query_field_name, entity, props):
     return {
         'query_field': query_field_name,
         'type': data['summary_default'].replace('_',' ').title(),
-        'result': result['summaries'][data['summary_field']]
+        'value': result['summaries'][data['summary_field']]
     }
 
 
@@ -113,6 +120,7 @@ if __name__ == "__main__":
 
         sgdata.append({
             'type': sequence['type'],
+            'id': sequence['id'],
             'name': sequence['code'],
             'data': data
         })

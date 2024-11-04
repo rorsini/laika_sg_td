@@ -1,54 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Sequence Report</title>
+  <title>Sequence Query Fields Report</title>
   <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
 
-  <h1>Sequence Report</h1>
+  <h1>Sequence Query Fields Report</h1>
 
-  {%- for seq in sgdata -%}
-    <h2>{{ seq.type }}: {{ seq.name }}</h2>
+  {%- for seq in sgdata %}
+    <blockquote>
+      <h2>{{ seq.type }}: {{ seq.name }} - {{ seq.id }}</h2>
 
-    {% for item in seq.data %}
       <table class="styled-table">
         <thead>
           <tr>
             <th>Query Field Name</th>
-            <th>{{ item.type }}</th>
+            <th>Calculation</th>
+            <th>Value</th>
           </tr>
         </thead>
         <tbody>
+          {% for item in seq.data -%}
             <tr>
               <td><strong>{{ item.query_field }}</strong></td>
-              <td>{{ item.result }}</td>
+              <td>{{ item.type }}</td>
+              <td><strong>{{ item.value }}</strong></td>
             </tr>
+          {%- endfor %}
         </tbody>
       </table>
-      {# Only if we have a list of versions: #}
-      {%- if item.versions -%}
-        <table class="styled-table">
-          <thead>
-            <tr>
-              <th colspan="2">In Progress Versions</th>
-            </tr>
-            <tr>
-              <th>ID</th>
-              <th>Code</th>
-            </tr>
-          </thead>
-          <tbody>
-            {%- for version in item.versions -%}
-              <tr>
-                <td>{{ version.id }}</td>
-                <td>{{ version.name }}</td>
-              </tr>
-            {%- endfor -%}
-          </tbody>
-        </table>
-      {%- endif -%}
-    {%- endfor -%}
-  {% endfor %}
+    </blockquote>
+  {%- endfor %}
 </body>
 </html>
