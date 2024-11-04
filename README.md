@@ -18,7 +18,7 @@ make install
 ```
 
 
-3. Run main.py and view output/index.html in a browser
+3. Run main.py and view output/index.html in a browser (on a Mac)
 ```bash
 ./main.py && open output/index.html
 ```
