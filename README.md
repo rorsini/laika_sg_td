@@ -74,7 +74,7 @@ results:
     'type': 'Sequence'}]
 ```
 
-## run pylint
+## Run Pylint
 
 ```bash
 % make lint                                                                                                 [main] laika_sg_td
@@ -82,4 +82,13 @@ pylint --disable=R,C main
 
 -------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 9.66/10, +0.34)
+```
+
+## Run Black formatter
+
+```bash
+% make format
+black *.py
+All done! ✨ 🍰 ✨
+2 files left unchanged.
 ```
