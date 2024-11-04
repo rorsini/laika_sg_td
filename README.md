@@ -1,5 +1,18 @@
 # Laika SG TD - Solution
 
+Goal: To be able to evaluate query fields in api client code, even if the
+filter conditions on the server change.
+
+Use the introspected schema info from sg.schema_field_read() to recursively
+construct a new query filter object that is compatible with sg.summarize().
+
+This solution recurses though an arbitrarily deep level of filter conditions to
+construct a new filter object to be passed into sg.summarize()
+
+See the output of the schema 'properties' for the two query fields in
+./schema.txt for reference.
+
+
 ## Setup
 
 1. Create and source virtualenv

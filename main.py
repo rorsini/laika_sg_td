@@ -32,14 +32,17 @@ sg = Shotgun(SERVER_PATH, SCRIPT_NAME, SCRIPT_KEY)
 
 def evaluate_query_field(field_name, entity, props):
     """
-    Use the introspected schema info to construct a new filter structure
-    for the given query field.
+    Goal: To be able to evaluate query fields in api client code, even if the
+    filter conditions on the server change.
+
+    Use the introspected schema info from sg.schema_field_read() to recursivly
+    construct a new query filter object that is copantable with sg.summarize().
 
     This solution recurses though an arbitrarily deep level of filter
-    conditions to construct a new query and work for any query fields passed in.
+    conditions to construct a new filter object to be passed into sg.summarize()
 
-    See the output of the schema properties for the two query fields in
-    ./schema.txt
+    See the output of the schema 'properties' for the two query fields in
+    ./schema.txt for reference.
 
     """
 
