@@ -49,21 +49,24 @@ def evaluate_query_field(query_field_name, entity, props):
     pp(entity, 'Entity', 1)
     #pp(props, 'Properites', 1)
 
-    #data['entity_type'] = entity['type']
     data['entity_type'] = props['query']['value']['entity_type']
     data['summary_field'] = props['summary_field']['value']
     data['summary_default'] = props['summary_default']['value']
 
     new_filters = []
 
-    if query_field_name == 'sg_cut_duration':
+    conditions_l1 = props['query']['value']['filters']['conditions']
+    logical_operator = props['query']['value']['filters']['logical_operator']
 
-        data['path'] = props['query']['value']['filters']['conditions'][0]['path']
-        data['operator'] = props['query']['value']['filters']['conditions'][0]['relation']
+    for condition in conditions_l1:
+        if 'path' in condition:
+            pp('create filter', 1)
+        else:
+            pass
 
-        new_filters.append([data['path'], data['operator'], entity])
+    return
 
-    elif query_field_name == 'sg_ip_versions':
+    if 'conditions' in props['query']['value']['filters']['conditions'][0]:
 
         data['path'] = props['query']['value']['filters']['conditions'][0]\
                 ['conditions'][1]['path']
@@ -78,6 +81,14 @@ def evaluate_query_field(query_field_name, entity, props):
                 ["sg_status_list", "is_not", ['apr']],
             ]
         })
+
+    if 'path' in props['query']['value']['filters']['conditions'][0]:
+
+        data['path'] = props['query']['value']['filters']['conditions'][0]['path']
+        data['operator'] = props['query']['value']['filters']['conditions'][0]['relation']
+
+        new_filters.append([data['path'], data['operator'], entity])
+
 
     pp(new_filters, 'new_filters', 1)
 

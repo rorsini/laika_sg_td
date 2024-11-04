@@ -20,4 +20,3 @@ SCRIPT_KEY  = os.environ['SG_SCRIPT_KEY']
 
 # instantiate a Shotgrid object
 sg = Shotgun(SERVER_PATH, SCRIPT_NAME, SCRIPT_KEY)
-
