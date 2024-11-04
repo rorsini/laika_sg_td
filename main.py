@@ -26,7 +26,7 @@ SCRIPT_KEY  = os.environ['SG_SCRIPT_KEY']
 sg = Shotgun(SERVER_PATH, SCRIPT_NAME, SCRIPT_KEY)
 
 
-def evaluate_query_field(query_field_name, sequence, props):
+def evaluate_query_field(query_field_name, entity, props):
     """
     Goal: Use the introspected schema info to construct a new filter structure
     for each of the two Sequence query fields.
@@ -40,40 +40,51 @@ def evaluate_query_field(query_field_name, sequence, props):
 
     """
 
-    # inspect - inspect the filter conditions and build a new filter structure to pass
+    # Inspect - inspect the filter conditions and build a new filter structure to pass
     # to sg.summarize() -- NOTE: Not yet working for sg_ip_versions:
+
     data = {}
 
-    #pp(props)
+    pp(query_field_name, 'query_field_name', 1)
+    pp(entity, 'Entity', 1)
+    #pp(props, 'Properites', 1)
+
+    #data['entity_type'] = entity['type']
+    data['entity_type'] = props['query']['value']['entity_type']
+    data['summary_field'] = props['summary_field']['value']
+    data['summary_default'] = props['summary_default']['value']
+
+    new_filters = []
 
     if query_field_name == 'sg_cut_duration':
 
-        data['entity_type'] = props['query']['value']['entity_type']
         data['path'] = props['query']['value']['filters']['conditions'][0]['path']
         data['operator'] = props['query']['value']['filters']['conditions'][0]['relation']
-        data['summary_field'] = props['summary_field']['value']
-        data['summary_default'] = props['summary_default']['value']
 
-        new_filters = [
-            [data['path'], data['operator'], sequence]
-        ]
+        new_filters.append([data['path'], data['operator'], entity])
 
-    else:
-        pass
+    elif query_field_name == 'sg_ip_versions':
+
+        data['path'] = props['query']['value']['filters']['conditions'][0]\
+                ['conditions'][1]['path']
+        data['operator'] = props['query']['value']['filters']['conditions'][0]\
+                ['conditions'][1]['relation']
+
+        new_filters.append([data['path'], data['operator'], entity])
 
     pp(new_filters, 'new_filters', 1)
 
     result = sg.summarize(
         entity_type=data['entity_type'],
-        filters = new_filters,
-        summary_fields=[{"field": query_field_name, "type": data['summary_default']}]
+        filters=new_filters,
+        summary_fields=[{"field": data['summary_field'], "type": data['summary_default']}]
     )
 
                 
     return {
         'query_field': query_field_name,
         'type': data['summary_default'],
-        'result': result['summaries'][query_field_name]
+        'result': result['summaries'][data['summary_field']]
     }
 
 
@@ -89,9 +100,9 @@ if __name__ == "__main__":
 
     for sequence in sequences:
 
-        QUERY_FIELDS = ['sg_cut_duration', 'sg_ip_versions']
         QUERY_FIELDS = ['sg_cut_duration']
-        #QUERY_FIELDS = ['sg_ip_versions']
+        QUERY_FIELDS = ['sg_ip_versions']
+        QUERY_FIELDS = ['sg_cut_duration', 'sg_ip_versions']
 
         data = []
         for query_field_name in QUERY_FIELDS:
@@ -106,7 +117,7 @@ if __name__ == "__main__":
             'data': data
         })
 
-    pp(sgdata)
+    pp(sgdata, 'results')
 
     ## HTML output:
 
