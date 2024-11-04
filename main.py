@@ -7,8 +7,7 @@ from collections import defaultdict
 
 def pp(data):
     """debug output printing"""
-    #pprint(data, indent=2)
-    pprint(data)
+    pprint(data, indent=2)
 
 def dd(obj):
     """inspect available property and method names"""
@@ -22,130 +21,121 @@ SCRIPT_KEY  = os.environ['SG_SCRIPT_KEY']
 # instantiate a Shotgrid object
 sg = Shotgun(SERVER_PATH, SCRIPT_NAME, SCRIPT_KEY)
 
-QUERY_FIELDS = ['sg_cut_duration', 'sg_ip_versions']
 
+def evaluate_sequence_query_field(sequence, query_field_name):
+    """
+	Goal: Use the introspected schema info to construct a new filter structure for each
+	of the two Sequence query fields.
 
-"""
-In [6]: sg.schema_field_read('Sequence', 'sg_cut_duration')
-Out[6]:
-{'sg_cut_duration': {'name': {'value': 'Cut Duration', 'editable': True},
-  'description': {'value': '', 'editable': True},
-  'custom_metadata': {'value': '', 'editable': True},
-  'entity_type': {'value': 'Sequence', 'editable': False},
-  'data_type': {'value': 'summary', 'editable': False},
-  'editable': {'value': True, 'editable': False},
-  'mandatory': {'value': False, 'editable': False},
-  'unique': {'value': False, 'editable': False},
-  'properties': {'default_value': {'value': None, 'editable': False},
-   'summary_default': {'value': 'average', 'editable': False},
-   'summary_value': {'value': None, 'editable': False},
-   'summary_field': {'value': 'sg_cut_duration', 'editable': False},
-   'query': {'value': {'entity_type': 'Shot',
-     'filters': {'logical_operator': 'and',
-      'conditions': [{'path': 'sg_sequence',
-        'relation': 'is',
-        'values': [{'type': 'Sequence',
-          'id': 0,
-          'name': 'Current Sequence',
-          'valid': 'parent_entity_token'}],
-        'active': 'true'}]}},
-    'editable': False}},
-  'visible': {'value': True, 'editable': True},
-  'ui_value_displayable': {'value': True, 'editable': False}}}
-"""
+	notes:
 
-"""
-In [7]: sg.schema_field_read('Sequence', 'sg_ip_versions')
-Out[7]:
-{'sg_ip_versions': {'name': {'value': 'IP Versions', 'editable': True},
-  'description': {'value': '', 'editable': True},
-  'custom_metadata': {'value': '', 'editable': True},
-  'entity_type': {'value': 'Sequence', 'editable': False},
-  'data_type': {'value': 'summary', 'editable': False},
-  'editable': {'value': True, 'editable': False},
-  'mandatory': {'value': False, 'editable': False},
-  'unique': {'value': False, 'editable': False},
-  'properties': {'default_value': {'value': None, 'editable': False},
-   'summary_default': {'value': 'record_count', 'editable': False},
-   'summary_value': {'value': None, 'editable': False},
-   'summary_field': {'value': 'id', 'editable': False},
-   'query': {'value': {'entity_type': 'Version',
-     'filters': {'logical_operator': 'and',
-      'conditions': [{'logical_operator': 'or',
-        'conditions': [{'path': 'entity',
-          'relation': 'is',
-          'values': [{'type': 'Sequence',
-            'id': 0,
-            'name': 'Current Sequence',
-            'valid': 'parent_entity_token'}],
-          'active': 'true'},
-         {'path': 'entity.Shot.sg_sequence',
-          'relation': 'is',
-          'values': [{'type': 'Sequence',
-            'id': 0,
-            'name': 'Current Sequence',
-            'valid': 'parent_entity_token'}],
-          'active': 'true'}]},
-       {'logical_operator': 'and',
-        'conditions': [{'logical_operator': 'and',
-          'conditions': [{'path': 'sg_status_list',
-            'active': 'true',
-            'relation': 'is_not',
-            'values': ['na']},
-           {'path': 'sg_status_list',
-            'active': 'true',
-            'relation': 'is_not',
-            'values': ['apr']}],
-          'qb_multivalued_condition_subgroup': True,
-          'active': 'true'}]}]}},
-    'editable': False}},
-  'visible': {'value': True, 'editable': True},
-  'ui_value_displayable': {'value': True, 'editable': False}}}
-"""
+	'sg_cut_duration':
+
+		{ 'default_value': {'editable': False, 'value': None},
+		  'query': { 'editable': False,
+					 'value': { 'entity_type': 'Shot',
+								'filters': { 'conditions': [ { 'active': 'true',
+															   'path': 'sg_sequence',
+															   'relation': 'is',
+															   'values': [ { 'id': 0,
+																			 'name': 'Current '
+																					 'Sequence',
+																			 'type': 'Sequence',
+																			 'valid': 'parent_entity_token'}]}],
+											 'logical_operator': 'and'}}},
+		  'summary_default': {'editable': False, 'value': 'average'},
+		  'summary_field': {'editable': False, 'value': 'sg_cut_duration'},
+		  'summary_value': {'editable': False, 'value': None}}
+
+	'sg_ip_versions':
+
+		{ 'default_value': {'editable': False, 'value': None},
+		  'query': { 'editable': False,
+					 'value': { 'entity_type': 'Version',
+								'filters': { 'conditions': [ { 'conditions': [ { 'active': 'true',
+																				 'path': 'entity',
+																				 'relation': 'is',
+																				 'values': [ { 'id': 0,
+																							   'name': 'Current '
+																									   'Sequence',
+																							   'type': 'Sequence',
+																							   'valid': 'parent_entity_token'}]},
+																			   { 'active': 'true',
+																				 'path': 'entity.Shot.sg_sequence',
+																				 'relation': 'is',
+																				 'values': [ { 'id': 0,
+																							   'name': 'Current '
+																									   'Sequence',
+																							   'type': 'Sequence',
+																							   'valid': 'parent_entity_token'}]}],
+															   'logical_operator': 'or'},
+															 { 'conditions': [ { 'active': 'true',
+																				 'conditions': [ { 'active': 'true',
+																								   'path': 'sg_status_list',
+																								   'relation': 'is_not',
+																								   'values': [ 'na']},
+																								 { 'active': 'true',
+																								   'path': 'sg_status_list',
+																								   'relation': 'is_not',
+																								   'values': [ 'apr']}],
+																				 'logical_operator': 'and',
+																				 'qb_multivalued_condition_subgroup': True}],
+															   'logical_operator': 'and'}],
+											 'logical_operator': 'and'}}},
+		  'summary_default': {'editable': False, 'value': 'record_count'},
+		  'summary_field': {'editable': False, 'value': 'id'},
+		  'summary_value': {'editable': False, 'value': None}}
+
+    """
+
+    data = {}
+    # inspect
+    data['properties'] = sg.schema_field_read('Sequence', query_field_name)[query_field_name]['properties']
+
+    pp(data['properties'])
+
+    data['entity_type'] = data['properties']['query']['value']['entity_type']
+    if query_field_name == 'sg_cut_duration':
+        data['path'] = data['properties']['query']['value']['filters']['conditions'][0]['path']
+        data['type'] = data['properties']['query']['value']['filters']['conditions'][0]['values'][0]['type']
+        data['id'] = data['properties']['query']['value']['filters']['conditions'][0]['values'][0]['id']
+        data['operator'] = data['properties']['query']['value']['filters']['conditions'][0]['relation']
+    data['summary_field'] = data['properties']['summary_field']['value']
+    data['summary_default'] = data['properties']['summary_default']['value']
+
+    new_filters = [['sg_sequence.Sequence.id', 'is', sequence['id']]]
+
+    new_filters = [
+        ['.'.join([data['path'], data['type'], "id"]),  data['operator'], sequence['id']]
+    ]
+
+    pp('new_filters:')
+    pp(new_filters)
+
+    result = sg.summarize(
+        entity_type=data['entity_type'],
+        filters = new_filters,
+        summary_fields=[{"field": query_field_name, "type": data['summary_default']}]
+    )
+
+    return result['summaries']
 
 
 
 
 if __name__ == "__main__":
 
-
-    def inspect_and_evaluate_query_field(entity_type, field_name):
-
-        data = defaultdict(dict)
-        data['field_name'] = field_name
-        data['summary_default'] = sg.schema_field_read('Sequence', field_name)[field_name]['properties']['summary_default']['value']
-        return data
-
-        #print(sg.schema_field_read('Sequence', 'sg_ip_versions')['sg_ip_versions']
-
-
-    for field_name in QUERY_FIELDS:
-        pp(inspect_and_evaluate_query_field('Sequence', field_name))
-
-
-
-    #dd(sg)
-
-    #filters= [['project','is',{'type': 'Project','id': 85}]]
-    #fields=["code", "sg_cut_duration", "sg_ip_versions"]
-    #sequences = sg.find("Sequence", filters, fields)
+    filters= [['project','is',{'type': 'Project','id': 85}]]
+    fields=["code", "sg_cut_duration", "sg_ip_versions"]
+    sequences = sg.find("Sequence", filters, fields)
 
     for sequence in sequences:
-        pp(sequence)
-        # {'code': 'SATL', 'id': 40, 'type': 'Sequence'}
+        #pp(sequence)
 
-        """Get shots"""
-        filters = [['sg_sequence.Sequence.id', 'is', 40]]
-        fields = ['code', 'sg_cut_duration']
-        sequence_shots = sg.find("Shot", filters, fields)
-        pp(sequence_shots)
-        # [ {'code': '0500.0010', 'id': 1162, 'sg_cut_duration': 14, 'type': 'Shot'},
-        #   {'code': '0500.0015', 'id': 1163, 'sg_cut_duration': 13, 'type': 'Shot'},
-        #   {'code': '0500.0020', 'id': 1164, 'sg_cut_duration': 12, 'type': 'Shot'},
-        #   {'code': '0500.0030', 'id': 1165, 'sg_cut_duration': 25, 'type': 'Shot'},
-        #   {'code': '0500.0040', 'id': 1166, 'sg_cut_duration': 17, 'type': 'Shot'},
-        #   {'code': '0500.0060', 'id': 1167, 'sg_cut_duration': 14, 'type': 'Shot'},
-        #   {'code': '0500.0050', 'id': 1168, 'sg_cut_duration': 25, 'type': 'Shot'}]
+        #QUERY_FIELDS = ['sg_cut_duration', 'sg_ip_versions']
+        QUERY_FIELDS = ['sg_cut_duration']
+        #QUERY_FIELDS = ['sg_ip_versions']
 
-
+        for field_name in QUERY_FIELDS:
+            pp(evaluate_sequence_query_field(sequence, field_name))
 
