@@ -1,0 +1,60 @@
+
+'sg_cut_duration':
+-----------------------------------------------------------------------------------
+
+{ 'default_value': {'editable': False, 'value': None},
+  'query': { 'editable': False,
+             'value': { 'entity_type': 'Shot',
+                        'filters': { 'conditions': [ { 'active': 'true',
+                                                       'path': 'sg_sequence',
+                                                       'relation': 'is',
+                                                       'values': [ { 'id': 0,
+                                                                     'name': 'Current '
+                                                                             'Sequence',
+                                                                     'type': 'Sequence',
+                                                                     'valid': 'parent_entity_token'}]}],
+                                     'logical_operator': 'and'}}},
+  'summary_default': {'editable': False, 'value': 'average'},
+  'summary_field': {'editable': False, 'value': 'sg_cut_duration'},
+  'summary_value': {'editable': False, 'value': None}}
+
+'sg_ip_versions':
+-----------------------------------------------------------------------------------
+
+{ 'default_value': {'editable': False, 'value': None},
+  'query': { 'editable': False,
+             'value': { 'entity_type': 'Version',
+                        'filters': { 'conditions': [ { 'conditions': [ { 'active': 'true',
+                                                                         'path': 'entity',
+                                                                         'relation': 'is',
+                                                                         'values': [ { 'id': 0,
+                                                                                       'name': 'Current '
+                                                                                               'Sequence',
+                                                                                       'type': 'Sequence',
+                                                                                       'valid': 'parent_entity_token'}]},
+                                                                       { 'active': 'true',
+                                                                         'path': 'entity.Shot.sg_sequence',
+                                                                         'relation': 'is',
+                                                                         'values': [ { 'id': 0,
+                                                                                       'name': 'Current '
+                                                                                               'Sequence',
+                                                                                       'type': 'Sequence',
+                                                                                       'valid': 'parent_entity_token'}]}],
+                                                       'logical_operator': 'or'},
+                                                     { 'conditions': [ { 'active': 'true',
+                                                                         'conditions': [ { 'active': 'true',
+                                                                                           'path': 'sg_status_list',
+                                                                                           'relation': 'is_not',
+                                                                                           'values': [ 'na']},
+                                                                                         { 'active': 'true',
+                                                                                           'path': 'sg_status_list',
+                                                                                           'relation': 'is_not',
+                                                                                           'values': [ 'apr']}],
+                                                                         'logical_operator': 'and',
+                                                                         'qb_multivalued_condition_subgroup': True}],
+                                                       'logical_operator': 'and'}],
+                                     'logical_operator': 'and'}}},
+  'summary_default': {'editable': False, 'value': 'record_count'},
+  'summary_field': {'editable': False, 'value': 'id'},
+  'summary_value': {'editable': False, 'value': None}}
+
