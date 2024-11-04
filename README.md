@@ -73,3 +73,13 @@ results:
     'name': 'SATL',
     'type': 'Sequence'}]
 ```
+
+## run pylint
+
+```bash
+% make lint                                                                                                 [main] laika_sg_td
+pylint --disable=R,C main
+
+-------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 9.66/10, +0.34)
+```
