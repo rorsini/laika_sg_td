@@ -27,7 +27,10 @@ def evaluate_sequence_query_field(sequence, query_field_name):
 	Goal: Use the introspected schema info to construct a new filter structure for each
 	of the two Sequence query fields.
 
-	notes:
+    A programatic solution should recurse though an unknown level of filter conditions
+    to constuct a new query and work for any query fields passed in.
+
+	Here is the output of the schema properties for the two query fields:
 
 	'sg_cut_duration':
 
@@ -88,11 +91,12 @@ def evaluate_sequence_query_field(sequence, query_field_name):
 
     """
 
+    # inspect - inspect the filter conditions and build a new filter structure to pass
+    # to sg.summarize() -- NOTE: Not yet working for sg_ip_versions:
     data = {}
-    # inspect
     data['properties'] = sg.schema_field_read('Sequence', query_field_name)[query_field_name]['properties']
 
-    pp(data['properties'])
+    #pp(data['properties'])
 
     data['entity_type'] = data['properties']['query']['value']['entity_type']
     if query_field_name == 'sg_cut_duration':
@@ -102,8 +106,6 @@ def evaluate_sequence_query_field(sequence, query_field_name):
         data['operator'] = data['properties']['query']['value']['filters']['conditions'][0]['relation']
     data['summary_field'] = data['properties']['summary_field']['value']
     data['summary_default'] = data['properties']['summary_default']['value']
-
-    new_filters = [['sg_sequence.Sequence.id', 'is', sequence['id']]]
 
     new_filters = [
         ['.'.join([data['path'], data['type'], "id"]),  data['operator'], sequence['id']]
@@ -131,14 +133,13 @@ def evaluate_sequence_query_field(sequence, query_field_name):
 if __name__ == "__main__":
 
     filters= [['project','is',{'type': 'Project','id': 85}]]
-    fields=["code", "sg_cut_duration", "sg_ip_versions"]
-    sequences = sg.find("Sequence", filters, fields)
+    sequences = sg.find("Sequence", filters, ["code"])
 
     sgdata = []
 
     for sequence in sequences:
-        pp(sequence)
 
+        # uncomment out both fields when they are both working
         #QUERY_FIELDS = ['sg_cut_duration', 'sg_ip_versions']
         QUERY_FIELDS = ['sg_cut_duration']
         #QUERY_FIELDS = ['sg_ip_versions']
@@ -148,19 +149,17 @@ if __name__ == "__main__":
             data.append(evaluate_sequence_query_field(sequence, field_name))
 
         sgdata.append({
+            'type': sequence['type'],
             'name': sequence['code'],
             'data': data
         })
-
-    pp('sgdata:')
-    pp(sgdata)
 
     env = Environment(loader=FileSystemLoader('templates'))
     template = env.get_template('report.html')
     output_from_parsed_template = template.render(sgdata=sgdata)
     print(output_from_parsed_template)
 
-    # to save the results
+    # render the results to html
     with open("output/index.html", "w") as fh:
         fh.write(output_from_parsed_template)
 

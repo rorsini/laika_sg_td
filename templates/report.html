@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <title>Sequence Report</title>
@@ -8,9 +8,8 @@
 
   <h1>Sequence Report</h1>
 
-  {% for seq in sgdata %}
-
-    <h2>Sequence: {{ seq.name }}</h2>
+  {%- for seq in sgdata -%}
+    <h2>{{ seq.type }}: {{ seq.name }}</h2>
 
     {% for item in seq.data %}
       <table class="styled-table">
@@ -27,7 +26,7 @@
             </tr>
         </tbody>
       </table>
-      {% if item.versions %}
+      {%- if item.versions -%}
         <table class="styled-table">
           <thead>
             <tr>
@@ -39,16 +38,16 @@
             </tr>
           </thead>
           <tbody>
-            {% for version in item.versions %}
+            {%- for version in item.versions -%}
               <tr>
                 <td>{{ version.id }}</td>
                 <td>{{ version.name }}</td>
               </tr>
-            {% endfor %}
+            {%- endfor -%}
           </tbody>
         </table>
-      {% endif %}
-    {% endfor %}
+      {%- endif -%}
+    {%- endfor -%}
   {% endfor %}
 </body>
 </html>
