@@ -67,13 +67,13 @@ def evaluate_query_field(query_field_name, entity, props):
             return [filters['path'], filters['relation'], values]
         else:
             if 'logical_operator' in filters:
-                filter = {}
-                filter['filter_operator'] = filters['logical_operator']
-                filter['filters'] = []
+                new_filter = {}
+                new_filter['filter_operator'] = filters['logical_operator']
+                new_filter['filters'] = []
 
                 for sub_filter in filters['conditions']:
-                    filter['filters'].append(build_filters(sub_filter))
-                return filter
+                    new_filter['filters'].append(build_filters(sub_filter))
+                return new_filter
 
 
     new_filters = build_filters(filters)
