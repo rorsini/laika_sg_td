@@ -1,0 +1,54 @@
+ <!DOCTYPE html>
+<html>
+<head>
+  <title>Sequence Report</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+
+  <h1>Sequence Report</h1>
+
+  {% for seq in sgdata %}
+
+    <h2>Sequence: {{ seq.name }}</h2>
+
+    {% for item in seq.data %}
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Query Field Name</th>
+            <th>{{ item.type }}</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td><strong>{{ item.query_field }}</strong></td>
+              <td>{{ item.result }}</td>
+            </tr>
+        </tbody>
+      </table>
+      {% if item.versions %}
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th colspan="2">In Progress Versions</th>
+            </tr>
+            <tr>
+              <th>ID</th>
+              <th>Code</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for version in item.versions %}
+              <tr>
+                <td>{{ version.id }}</td>
+                <td>{{ version.name }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+</body>
+</html>

@@ -3,7 +3,7 @@
 import os
 from pprint import pprint
 from shotgun_api3 import Shotgun
-from collections import defaultdict
+from jinja2 import Environment, FileSystemLoader
 
 def pp(data):
     """debug output printing"""
@@ -118,7 +118,12 @@ def evaluate_sequence_query_field(sequence, query_field_name):
         summary_fields=[{"field": query_field_name, "type": data['summary_default']}]
     )
 
-    return result['summaries']
+                
+    return {
+        'query_field': query_field_name,
+        'type': data['summary_default'],
+        'result': result['summaries'][query_field_name]
+    }
 
 
 
@@ -129,13 +134,33 @@ if __name__ == "__main__":
     fields=["code", "sg_cut_duration", "sg_ip_versions"]
     sequences = sg.find("Sequence", filters, fields)
 
+    sgdata = []
+
     for sequence in sequences:
-        #pp(sequence)
+        pp(sequence)
 
         #QUERY_FIELDS = ['sg_cut_duration', 'sg_ip_versions']
         QUERY_FIELDS = ['sg_cut_duration']
         #QUERY_FIELDS = ['sg_ip_versions']
 
+        data = []
         for field_name in QUERY_FIELDS:
-            pp(evaluate_sequence_query_field(sequence, field_name))
+            data.append(evaluate_sequence_query_field(sequence, field_name))
+
+        sgdata.append({
+            'name': sequence['code'],
+            'data': data
+        })
+
+    pp('sgdata:')
+    pp(sgdata)
+
+    env = Environment(loader=FileSystemLoader('templates'))
+    template = env.get_template('report.html')
+    output_from_parsed_template = template.render(sgdata=sgdata)
+    print(output_from_parsed_template)
+
+    # to save the results
+    with open("output/index.html", "w") as fh:
+        fh.write(output_from_parsed_template)
 
